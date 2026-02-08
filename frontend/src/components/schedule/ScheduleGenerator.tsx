@@ -45,7 +45,7 @@ export function ScheduleGenerator({
       console.log('[REST PERIOD] Update successful:', response.data);
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tournaments', tournamentId] });
       console.log('[REST PERIOD] Tournament query invalidated, data will refresh');
       toast.success('Rest period updated', {
