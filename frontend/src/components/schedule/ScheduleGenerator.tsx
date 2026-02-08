@@ -1,25 +1,70 @@
 import { useScheduleGenerator } from '@/hooks/useScheduleGenerator';
 import { toast } from 'sonner';
-import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, Minus, Plus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import type { Tournament } from '@/types';
 
 interface ScheduleGeneratorProps {
   tournamentId: string;
   hasTeams: boolean;
   hasVenues: boolean;
   hasMatches: boolean;
+  tournament: Tournament;
 }
 
 export function ScheduleGenerator({ 
   tournamentId, 
   hasTeams, 
   hasVenues,
-  hasMatches
+  hasMatches,
+  tournament
 }: ScheduleGeneratorProps) {
   const { mutate, isPending } = useScheduleGenerator(tournamentId);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [restHours, setRestHours] = useState(tournament?.min_rest_hours || 24);
+  const queryClient = useQueryClient();
+
+  // Update rest hours when tournament changes
+  useEffect(() => {
+    if (tournament?.min_rest_hours !== undefined) {
+      setRestHours(tournament.min_rest_hours);
+    }
+  }, [tournament?.min_rest_hours]);
+
+  // Mutation to update rest period
+  const updateRestPeriod = useMutation({
+    mutationFn: async (newRestHours: number) => {
+      console.log(`[REST PERIOD] Updating to ${newRestHours} hours for tournament ${tournamentId}`);
+      const response = await api.put(`/tournaments/${tournamentId}`, {
+        min_rest_hours: newRestHours
+      });
+      console.log('[REST PERIOD] Update successful:', response.data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['tournaments', tournamentId] });
+      console.log('[REST PERIOD] Tournament query invalidated, data will refresh');
+      toast.success('Rest period updated', {
+        description: `Set to ${restHours} hours`,
+        duration: 2000,
+      });
+    },
+    onError: (error: any) => {
+      console.error('[REST PERIOD] Update failed:', error);
+      toast.error('Failed to update rest period');
+      setRestHours(tournament?.min_rest_hours || 24);
+    }
+  });
+
+  const handleRestHoursChange = (delta: number) => {
+    const newValue = Math.max(0, Math.min(72, restHours + delta));
+    setRestHours(newValue);
+    updateRestPeriod.mutate(newValue);
+  };
 
   const handleGenerateClick = () => {
     if (hasMatches) {
@@ -157,9 +202,51 @@ export function ScheduleGenerator({
     <>
       <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-blue-100 shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-2">AI Schedule Generator</h3>
-        <p className="text-center text-gray-600 mb-6 max-w-md">
+        <p className="text-center text-gray-600 mb-4 max-w-md">
           Use our AI engine to automatically generate a conflict-free schedule optimized for team rest and venue availability.
         </p>
+        
+        {/* Rest Period Control */}
+        <div className="mb-6 w-full max-w-sm">
+          <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-600" />
+                Minimum Rest Period
+              </label>
+              <span className="text-xs text-gray-500">Between matches</span>
+            </div>
+            
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => handleRestHoursChange(-2)}
+                disabled={restHours <= 0 || updateRestPeriod.isPending}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-gray-300"
+                title="Decrease by 2 hours"
+              >
+                <Minus className="w-5 h-5 text-gray-700" />
+              </button>
+              
+              <div className="flex-1 text-center">
+                <div className="text-3xl font-bold text-blue-600">{restHours}</div>
+                <div className="text-xs text-gray-500 mt-1">hours</div>
+              </div>
+              
+              <button
+                onClick={() => handleRestHoursChange(2)}
+                disabled={restHours >= 72 || updateRestPeriod.isPending}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-100 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-blue-300"
+                title="Increase by 2 hours"
+              >
+                <Plus className="w-5 h-5 text-blue-700" />
+              </button>
+            </div>
+            
+            <div className="mt-3 text-xs text-center text-gray-500">
+              Teams must rest at least {restHours}h between matches
+            </div>
+          </div>
+        </div>
         
         <div className="relative group">
           <button

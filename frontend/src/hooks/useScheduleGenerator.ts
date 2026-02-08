@@ -16,12 +16,17 @@ export function useScheduleGenerator(tournamentId: string) {
   return useMutation({
     mutationFn: async () => {
       const start = Date.now();
+      console.log(`[SCHEDULE] Generating schedule for tournament ${tournamentId}...`);
       const result = await tournamentService.generateSchedule(tournamentId);
       const duration = ((Date.now() - start) / 1000).toFixed(1);
+      console.log(`[SCHEDULE] Generation completed in ${duration}s:`, result);
       return { ...result, duration };
     },
     onSuccess: () => {
+      // Invalidate both matches AND tournament to get fresh data
       queryClient.invalidateQueries({ queryKey: ['matches', tournamentId] });
+      queryClient.invalidateQueries({ queryKey: ['tournaments', tournamentId] });
+      queryClient.invalidateQueries({ queryKey: ['tournaments'] });
       // Only toast on manual success handling in component usually, but here is fine too or specific component handled
     },
     onError: (error: any) => {

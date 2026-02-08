@@ -1,4 +1,4 @@
-import type { Match } from '@/types';
+import type { Match, Tournament } from '@/types';
 import { ScheduleGenerator } from './ScheduleGenerator';
 import { ScheduleCalendar } from './ScheduleCalendar';
 import { Card } from '@/components/ui/Card';
@@ -12,6 +12,7 @@ interface ScheduleViewProps {
   hasVenues: boolean;
   isLoading: boolean;
   isAdmin?: boolean;
+  tournament: Tournament;
 }
 
 export function ScheduleView({ 
@@ -20,6 +21,7 @@ export function ScheduleView({
   hasTeams, 
   hasVenues,
   isAdmin = false,
+  tournament,
 }: ScheduleViewProps) {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
@@ -35,6 +37,7 @@ export function ScheduleView({
             hasTeams={hasTeams} 
             hasVenues={hasVenues}
             hasMatches={hasMatches}
+            tournament={tournament}
           />
         </section>
       )}

@@ -127,6 +127,7 @@ export function TournamentDetailPage() {
             hasVenues={tournament.venues?.length >= 1}
             isLoading={isLoading}
             isAdmin={isAdmin}
+            tournament={tournament}
           />
         )}
       </div>
