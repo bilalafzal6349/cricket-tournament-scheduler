@@ -46,41 +46,77 @@ export function ScheduleGenerator({
             duration: 10000,
           });
           
+          // Separate problems from solutions
+          const problems = data.conflicts?.filter((c: string) => !c.includes('💡') && !c.includes('Solution:')) || [];
+          const solutions = data.conflicts?.filter((c: string) => c.includes('💡') || c.includes('Solution:')) || [];
+          
           // Show detailed modal with conflicts
           setTimeout(() => {
             const modal = document.createElement('div');
             modal.innerHTML = `
-              <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-                  <div class="bg-red-50 px-6 py-4 border-b border-red-100">
-                    <h3 class="text-xl font-bold text-red-900 flex items-center gap-2">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="z-index: 9999;">
+                <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden">
+                  <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5 border-b border-red-100">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
-                      Scheduling Conflict Detected
+                      <span>Scheduling Not Possible</span>
                     </h3>
+                    <p class="text-red-50 text-sm mt-1">${data.message || 'The current tournament configuration cannot produce a valid schedule'}</p>
                   </div>
-                  <div class="p-6 overflow-y-auto max-h-[60vh]">
-                    <p class="text-gray-700 mb-4 font-medium">${data.message}</p>
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Issues Found:
-                      </h4>
-                      <ul class="space-y-2 text-sm">
-                        ${data.conflicts?.map((conflict: string) => `
-                          <li class="flex items-start gap-2 text-gray-700">
-                            <span class="text-red-500 font-bold mt-0.5">•</span>
-                            <span>${conflict}</span>
-                          </li>
-                        `).join('') || '<li>Unknown error occurred</li>'}
-                      </ul>
-                    </div>
+                  
+                  <div class="p-6 overflow-y-auto max-h-[calc(85vh-180px)] space-y-5">
+                    ${problems.length > 0 ? `
+                      <div class="bg-red-50 rounded-lg p-4 border-l-4 border-red-500">
+                        <h4 class="font-bold text-red-900 mb-3 flex items-center gap-2 text-base">
+                          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                          </svg>
+                          Problems Detected:
+                        </h4>
+                        <ul class="space-y-2">
+                          ${problems.map((problem: string) => `
+                            <li class="flex items-start gap-2 text-sm text-red-800">
+                              <span class="text-red-600 font-bold mt-0.5 text-base">×</span>
+                              <span class="leading-relaxed">${problem}</span>
+                            </li>
+                          `).join('')}
+                        </ul>
+                      </div>
+                    ` : ''}
+                    
+                    ${solutions.length > 0 ? `
+                      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 border-l-4 border-blue-500 shadow-sm">
+                        <h4 class="font-bold text-blue-900 mb-3 flex items-center gap-2 text-base">
+                          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                          Suggested Solutions:
+                        </h4>
+                        <ul class="space-y-3">
+                          ${solutions.map((solution: string) => {
+                            const cleanSolution = solution.replace('💡 Solution:', '').replace('💡', '').trim();
+                            return `
+                              <li class="flex items-start gap-3 bg-white rounded-md p-3 shadow-sm border border-blue-100">
+                                <span class="text-2xl mt-0.5">💡</span>
+                                <span class="text-sm text-gray-800 leading-relaxed font-medium">${cleanSolution}</span>
+                              </li>
+                            `;
+                          }).join('')}
+                        </ul>
+                      </div>
+                    ` : ''}
+                    
+                    ${problems.length === 0 && solutions.length === 0 ? `
+                      <div class="text-center py-4 text-gray-500">
+                        <p>No specific details available. Please check your tournament configuration.</p>
+                      </div>
+                    ` : ''}
                   </div>
-                  <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
-                    <button onclick="this.closest('.fixed').remove()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                  
+                  <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                    <button onclick="this.closest('.fixed').remove()" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg">
                       Got it, I'll fix this
                     </button>
                   </div>

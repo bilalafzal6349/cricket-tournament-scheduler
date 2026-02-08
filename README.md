@@ -1,359 +1,263 @@
-# 🏏 Cricket Tournament Scheduler - AI-Powered Scheduling System
+# 🏏 Cricket Tournament Scheduler
 
-An intelligent tournament management system that uses AI (constraint programming with Google OR-Tools) to automatically generate conflict-free match schedules for cricket tournaments.
+A full-stack web application for managing cricket tournaments with AI-powered conflict-free scheduling. Built with React, FastAPI, and Google OR-Tools.
 
-## 🚀 Features
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![React](https://img.shields.io/badge/react-18.3+-blue.svg)
 
-### Core Features
-- ✅ **AI-Powered Scheduling**: Uses Google OR-Tools constraint programming solver
-- ✅ **Conflict-Free Schedules**: No team plays multiple matches simultaneously
-- ✅ **Venue Management**: No double-booking of venues
-- ✅ **Rest Period Enforcement**: Configurable minimum rest between matches
-- ✅ **Multiple Tournament Formats**: Round-robin, knockout, double round-robin, league
-- ✅ **Real-time Schedule Generation**: Generate schedules in seconds
-- ✅ **Manual Override**: Edit and adjust AI-generated schedules
-- ✅ **RESTful API**: Complete FastAPI backend with auto-generated docs
+## ✨ Features
 
-### Smart Constraints
-1. **Hard Constraints** (Must be satisfied):
-   - No team plays multiple matches at the same time
-   - No venue double-booking
-   - Each match pair plays exactly once (based on format)
+### 🤖 AI-Powered Scheduling
+- **Zero-conflict guarantee** using Google OR-Tools CP-SAT solver
+- Automatically handles team rest periods, venue availability, and match conflicts
+- Pre-validation checks before scheduling
+- Post-validation to ensure schedule integrity
+- Detailed error messages with actionable suggestions
 
-2. **Soft Constraints** (Optimized):
-   - Minimum rest period between matches
-   - Fair distribution across time slots
-   - Compact tournament duration
+### 🔐 Role-Based Access Control
+- **Admin users**: Full tournament management capabilities
+- **Regular users**: View-only access to tournaments and schedules
+- JWT-based authentication with secure password hashing
 
-## 🛠️ Tech Stack
+### 📊 Tournament Management
+- Create and manage multiple tournaments
+- Add teams and venues
+- Generate optimized match schedules
+- View schedules in calendar and list formats
+- Real-time schedule updates
+
+### 💎 Modern UI/UX
+- Beautiful, responsive design with Tailwind CSS
+- Professional confirmation dialogs
+- Empty state messages
+- Loading states and animations
+- Mobile-friendly interface
+
+## 🚀 Tech Stack
 
 ### Backend
-- **FastAPI** - Modern, fast web framework
-- **SQLAlchemy** - SQL toolkit and ORM
+- **FastAPI** - Modern Python web framework
 - **PostgreSQL** - Relational database
-- **Google OR-Tools** - AI scheduling engine
-- **Pydantic** - Data validation
-- **Redis** - Caching (optional)
+- **SQLAlchemy** - ORM for database operations
+- **Google OR-Tools** - Constraint programming solver
+- **JWT** - Secure authentication
+- **Bcrypt** - Password hashing
 
-## 📦 Installation & Setup
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
+- **FullCalendar** - Calendar component
 
-### Option 1: Docker (Recommended for Hackathon)
+## 📋 Prerequisites
 
+- **Python 3.11+**
+- **Node.js 18+**
+- **PostgreSQL 14+**
+- **pnpm** (recommended) or npm
+
+## 🛠️ Installation
+
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/bilalafzal6349/cricket-tournament-scheduler.git
 cd cricket-tournament-scheduler
-
-# Start all services with Docker Compose
-docker-compose up -d
-
-# The backend will be available at http://localhost:8000
-# API docs at http://localhost:8000/api/docs
 ```
 
-### Option 2: Local Development
-
-#### Prerequisites
-- Python 3.11+
-- PostgreSQL 15+
-- Redis (optional)
-
-#### Setup Steps
+### 2. Backend Setup
 
 ```bash
-# 1. Set up PostgreSQL database
-createdb cricket_tournament_db
-
-# 2. Navigate to backend directory
 cd backend
 
-# 3. Create virtual environment
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# 4. Install dependencies
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-# 5. Create .env file
+# Create .env file
 cp .env.example .env
+# Edit .env with your database credentials
 
-# 6. Update .env with your database credentials
-# DATABASE_URL=postgresql://your_user:your_password@localhost:5432/cricket_tournament_db
+# Initialize database
+python init_db.py
 
-# 7. Run the application
-uvicorn app.main:app --reload
-
-# Backend runs at http://localhost:8000
-# API docs at http://localhost:8000/api/docs
+# Run backend server
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 🎯 Quick Start Guide
-
-### 1. Create a Tournament
+### 3. Frontend Setup
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/tournaments/" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "IPL 2024",
-    "description": "Indian Premier League 2024",
-    "format": "round_robin",
-    "start_date": "2024-03-15T00:00:00",
-    "end_date": "2024-05-30T00:00:00",
-    "match_duration_hours": 4,
-    "min_rest_hours": 24,
-    "slots_per_day": 3
-  }'
+cd frontend
+
+# Install dependencies
+pnpm install
+# or: npm install
+
+# Run development server
+pnpm dev
+# or: npm run dev
 ```
 
-### 2. Add Teams
+## 🔧 Configuration
 
+### Backend (.env)
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/cricket_tournament_db
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+DEBUG=True
+```
+
+### Database Setup
 ```bash
-# Add multiple teams
-curl -X POST "http://localhost:8000/api/v1/tournaments/{tournament_id}/teams" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Mumbai Indians",
-    "code": "MI"
-  }'
+# Create PostgreSQL database
+createdb cricket_tournament_db
 
-curl -X POST "http://localhost:8000/api/v1/tournaments/{tournament_id}/teams" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Chennai Super Kings",
-    "code": "CSK"
-  }'
-
-# Add more teams...
+# Run initialization script
+python init_db.py
 ```
 
-### 3. Add Venues
+## 🎯 Usage
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/tournaments/{tournament_id}/venues" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Wankhede Stadium",
-    "city": "Mumbai",
-    "capacity": 33000,
-    "latitude": 18.9388,
-    "longitude": 72.8258
-  }'
-```
+### Access the Application
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/api/docs
 
-### 4. Generate AI Schedule 🤖
+### Default Credentials
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/tournaments/{tournament_id}/generate-schedule"
-```
+**Admin Account:**
+- Email: `admin@example.com`
+- Password: `admin123`
 
-### 5. View Schedule
+**User Account:**
+- Email: `user@example.com`
+- Password: `user123`
 
-```bash
-curl -X GET "http://localhost:8000/api/v1/tournaments/{tournament_id}/matches"
-```
+### Creating a Tournament
+
+1. **Login** as admin
+2. Click **"Create New"** in the sidebar
+3. Fill in tournament details:
+   - Name
+   - Start and end dates
+   - Format (Round Robin, Knockout, etc.)
+4. **Add Teams** to the tournament
+5. **Add Venues** for matches
+6. Go to **Schedule** tab
+7. Click **"Generate AI Schedule"**
+8. View the conflict-free schedule!
 
 ## 📚 API Documentation
 
-Once the backend is running, visit:
-- **Swagger UI**: http://localhost:8000/api/docs
-- **ReDoc**: http://localhost:8000/api/redoc
+The API follows RESTful conventions. Full interactive documentation is available at `/api/docs` when running the backend.
 
 ### Key Endpoints
 
+#### Authentication
+- `POST /api/v1/auth/login` - User login
+- `GET /api/v1/auth/me` - Get current user
+
 #### Tournaments
-- `POST /api/v1/tournaments/` - Create tournament
-- `GET /api/v1/tournaments/` - List all tournaments
+- `GET /api/v1/tournaments` - List all tournaments
+- `POST /api/v1/tournaments` - Create tournament (admin)
 - `GET /api/v1/tournaments/{id}` - Get tournament details
-- `PUT /api/v1/tournaments/{id}` - Update tournament
-- `DELETE /api/v1/tournaments/{id}` - Delete tournament
+- `PUT /api/v1/tournaments/{id}` - Update tournament (admin)
+- `DELETE /api/v1/tournaments/{id}` - Delete tournament (admin)
 
 #### Teams
-- `POST /api/v1/tournaments/{id}/teams` - Add team
-- `GET /api/v1/tournaments/{id}/teams` - List teams
-- `PUT /api/v1/teams/{id}` - Update team
-- `DELETE /api/v1/teams/{id}` - Delete team
+- `POST /api/v1/tournaments/{id}/teams` - Add team (admin)
+- `DELETE /api/v1/teams/{id}` - Remove team (admin)
 
 #### Venues
-- `POST /api/v1/tournaments/{id}/venues` - Add venue
-- `GET /api/v1/tournaments/{id}/venues` - List venues
-- `PUT /api/v1/venues/{id}` - Update venue
-- `DELETE /api/v1/venues/{id}` - Delete venue
+- `POST /api/v1/tournaments/{id}/venues` - Add venue (admin)
+- `DELETE /api/v1/venues/{id}` - Remove venue (admin)
 
-#### Schedule (AI-Powered) 🌟
-- `POST /api/v1/tournaments/{id}/generate-schedule` - **Generate AI schedule**
-- `GET /api/v1/tournaments/{id}/matches` - View schedule
-- `PUT /api/v1/matches/{id}` - Update/reschedule match
-- `DELETE /api/v1/tournaments/{id}/matches` - Clear schedule
+#### Scheduling
+- `POST /api/v1/tournaments/{id}/generate-schedule` - Generate AI schedule (admin)
+- `GET /api/v1/tournaments/{id}/matches` - Get tournament matches
 
-## 🧪 Testing the AI Scheduler
+## 🧪 Testing
 
-### Test with Sample Data
+```bash
+# Backend tests
+cd backend
+pytest
 
-```python
-import requests
-import json
-from datetime import datetime, timedelta
-
-BASE_URL = "http://localhost:8000/api/v1"
-
-# 1. Create tournament
-tournament_data = {
-    "name": "Test Tournament 2024",
-    "format": "round_robin",
-    "start_date": (datetime.now() + timedelta(days=7)).isoformat(),
-    "end_date": (datetime.now() + timedelta(days=37)).isoformat(),
-    "match_duration_hours": 4,
-    "min_rest_hours": 24,
-    "slots_per_day": 3
-}
-
-response = requests.post(f"{BASE_URL}/tournaments/", json=tournament_data)
-tournament_id = response.json()["id"]
-print(f"Created tournament: {tournament_id}")
-
-# 2. Add teams
-teams = ["Team A", "Team B", "Team C", "Team D", "Team E", "Team F"]
-for i, team_name in enumerate(teams):
-    team_data = {
-        "name": team_name,
-        "code": f"T{i+1}"
-    }
-    requests.post(f"{BASE_URL}/tournaments/{tournament_id}/teams", json=team_data)
-
-# 3. Add venues
-venues = ["Venue 1", "Venue 2", "Venue 3"]
-for venue_name in venues:
-    venue_data = {
-        "name": venue_name,
-        "city": "Test City",
-        "capacity": 50000
-    }
-    requests.post(f"{BASE_URL}/tournaments/{tournament_id}/venues", json=venue_data)
-
-# 4. Generate schedule
-response = requests.post(f"{BASE_URL}/tournaments/{tournament_id}/generate-schedule")
-result = response.json()
-print(f"Schedule generated: {result}")
-
-# 5. View schedule
-response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/matches")
-matches = response.json()
-print(f"Total matches scheduled: {len(matches)}")
-for match in matches[:5]:  # Print first 5
-    print(f"Match {match['match_number']}: {match['scheduled_start']}")
+# Frontend tests (if configured)
+cd frontend
+pnpm test
 ```
 
-## 🎨 Project Structure
+## 🏗️ Project Structure
 
 ```
 cricket-tournament-scheduler/
 ├── backend/
 │   ├── app/
-│   │   ├── api/              # API endpoints
-│   │   │   ├── tournaments.py
-│   │   │   ├── teams.py
-│   │   │   ├── venues.py
-│   │   │   └── schedule.py
-│   │   ├── core/             # Core configuration
-│   │   │   └── config.py
-│   │   ├── db/               # Database setup
-│   │   │   └── session.py
-│   │   ├── models/           # SQLAlchemy models
-│   │   │   └── models.py
-│   │   ├── schemas/          # Pydantic schemas
-│   │   │   └── schemas.py
-│   │   ├── services/         # Business logic
-│   │   │   └── scheduler.py  # 🤖 AI Scheduling Engine
-│   │   └── main.py           # FastAPI app
-│   ├── tests/                # Tests
-│   ├── requirements.txt      # Python dependencies
-│   ├── Dockerfile
-│   └── .env.example
-├── docker-compose.yml
+│   │   ├── api/          # API endpoints
+│   │   ├── core/         # Configuration and security
+│   │   ├── db/           # Database session
+│   │   ├── models/       # SQLAlchemy models
+│   │   ├── schemas/      # Pydantic schemas
+│   │   └── services/     # Business logic (AI scheduler)
+│   ├── tests/            # Backend tests
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/   # React components
+│   │   ├── pages/        # Page components
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── services/     # API services
+│   │   ├── context/      # React context (Auth)
+│   │   └── types/        # TypeScript types
+│   └── package.json
 └── README.md
 ```
 
-## 🔧 Configuration
-
-Edit `.env` file to configure:
-
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/cricket_tournament_db
-
-# API Settings
-DEBUG=True
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
-
-# Scheduling Settings
-DEFAULT_MATCH_DURATION_HOURS=4
-MIN_REST_HOURS_BETWEEN_MATCHES=24
-DEFAULT_SLOTS_PER_DAY=3
-```
-
-## 🏆 How the AI Scheduling Works
-
-The system uses **Constraint Programming (CP)** with Google OR-Tools:
-
-1. **Problem Modeling**: Tournament scheduling as a CSP (Constraint Satisfaction Problem)
-2. **Decision Variables**: Binary variables for each (match, time_slot, venue) combination
-3. **Constraints**:
-   - Each match scheduled exactly once
-   - No venue double-booking
-   - No team plays multiple matches simultaneously
-   - Minimum rest period enforcement
-4. **Optimization**: CP-SAT solver finds optimal solution in seconds
-5. **Result**: Conflict-free schedule that satisfies all constraints
-
-### Why Constraint Programming?
-- Purpose-built for scheduling problems
-- Handles complex constraints efficiently
-- Fast optimization (seconds for 100+ matches)
-- Proven in sports scheduling
-
-## 🚀 Hackathon Demo Tips
-
-1. **Quick Demo Setup**: Use Docker Compose - one command setup
-2. **Show AI in Action**: Generate schedule for 8 teams, 3 venues - watch it work in real-time
-3. **Highlight Conflicts**: Try scheduling with impossible constraints to show validation
-4. **Manual Override**: Show how users can adjust AI-generated schedules
-5. **Scale Test**: Generate schedule for 16 teams to show it handles complexity
-
-## 📝 Example Tournament Formats
-
-### Round Robin (All teams play each other once)
-- 8 teams = 28 matches
-- 10 teams = 45 matches
-- 12 teams = 66 matches
-
-### Double Round Robin (IPL-style)
-- 8 teams = 56 matches
-- 10 teams = 90 matches
-
-## 🐛 Troubleshooting
-
-**Issue**: Database connection error
-```bash
-# Check if PostgreSQL is running
-docker-compose ps
-# Restart services
-docker-compose restart
-```
-
-**Issue**: Schedule generation fails
-- Ensure tournament has at least 2 teams and 1 venue
-- Check date range is sufficient for all matches
-- Verify constraints aren't too restrictive
-
-## 📄 License
-
-MIT License - Feel free to use in your projects!
-
 ## 🤝 Contributing
 
-This is a hackathon project, but contributions are welcome!
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Bilal Afzal**
+- GitHub: [@bilalafzal6349](https://github.com/bilalafzal6349)
+
+## 🙏 Acknowledgments
+
+- Google OR-Tools for the constraint programming solver
+- FastAPI for the excellent Python web framework
+- React and Vite for the modern frontend stack
+- FullCalendar for the calendar component
+
+## 📞 Support
+
+For support, email bilalafzal6349@gmail.com or open an issue on GitHub.
 
 ---
 
-**Built with ❤️ for hackathons** | AI-Powered Sports Scheduling
+**Made with ❤️ for cricket tournament organizers**
