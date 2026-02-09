@@ -25,20 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Skip session restoration for now - causes 404 on initial load
-    // const initAuth = async () => {
-    //   if (token) {
-    //     try {
-    //       const response = await api.get('/auth/me');
-    //       setUser(response.data);
-    //     } catch (error) {
-    //       console.error('Failed to restore session:', error);
-    //       logout();
-    //     }
-    //   }
-    //   setIsLoading(false);
-    // };
-    // initAuth();
+    // Set loading to false immediately - session restoration disabled
     setIsLoading(false);
   }, []);
 
