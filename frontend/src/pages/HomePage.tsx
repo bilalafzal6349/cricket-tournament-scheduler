@@ -10,13 +10,15 @@ import { motion } from 'framer-motion';
 export function HomePage() {
   const { data: tournaments, isLoading } = useTournaments();
   
-  const recentTournaments = tournaments?.slice(0, 3) || [];
+  // Ensure tournaments is an array
+  const tournamentsArray = Array.isArray(tournaments) ? tournaments : [];
+  const recentTournaments = tournamentsArray.slice(0, 3);
   
   // In a real app, these would come from an API
   const stats = [
     { 
       label: 'Active Tournaments', 
-      value: tournaments?.filter(t => t.status === 'in_progress').length || 0, 
+      value: tournamentsArray.filter(t => t.status === 'in_progress').length, 
       icon: Trophy, 
       color: 'from-amber-500 to-orange-600',
       bg: 'bg-orange-50'
